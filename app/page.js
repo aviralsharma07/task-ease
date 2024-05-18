@@ -38,6 +38,25 @@ export default function Home() {
     }
   };
 
+  const completeTodo = async (id) => {
+    try {
+      const response = await axios.put(
+        "/api",
+        {},
+        {
+          params: {
+            mongoId: id,
+          },
+        }
+      );
+      toast.success(response.data.msg);
+      fetchTodos();
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to complete todo");
+    }
+  };
+
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -98,7 +117,7 @@ export default function Home() {
           </thead>
           <tbody>
             {todoData.map((item, index) => {
-              return <Todo key={index} id={index} mongoId={item._id} title={item.title} description={item.description} complete={item.isCompleted} deleteTodo={deleteTodo} />;
+              return <Todo key={index} id={index} mongoId={item._id} title={item.title} description={item.description} complete={item.isCompleted} deleteTodo={deleteTodo} completeTodo={completeTodo} />;
             })}
             {/* <Todo />
             <Todo />
