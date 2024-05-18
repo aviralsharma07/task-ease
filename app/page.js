@@ -1,7 +1,8 @@
 "use client";
 
 import Todo from "@/components/Todo";
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,17 +12,50 @@ export default function Home() {
     description: "",
   });
 
+  const [todoData, setTodoData] = useState([]);
+
+  const fetchTodos = async () => {
+    try {
+      const response = await axios("/api");
+      setTodoData(response.data.todos);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deleteTodo = async (id) => {
+    try {
+      const response = await axios.delete("/api", {
+        params: {
+          mongoId: id,
+        },
+      });
+      toast.success(response.data.msg);
+      fetchTodos();
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to delete todo");
+    }
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
   const onChangeHandler = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     console.log(formData);
   };
 
-  const onSubmitHandler = (e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
     try {
       // api code here
+      const response = await axios.post("/api/", formData);
 
-      toast.success("Todo Added Successfully");
+      toast.success(response.data.msg);
+      setFormData({ title: "", description: "" });
+      await fetchTodos();
     } catch (error) {
       console.log(error);
       toast.error("Failed to add todo");
@@ -63,10 +97,13 @@ export default function Home() {
             </tr>
           </thead>
           <tbody>
+            {todoData.map((item, index) => {
+              return <Todo key={index} id={index} mongoId={item._id} title={item.title} description={item.description} complete={item.isCompleted} deleteTodo={deleteTodo} />;
+            })}
+            {/* <Todo />
             <Todo />
             <Todo />
-            <Todo />
-            <Todo />
+            <Todo /> */}
           </tbody>
         </table>
       </div>
